@@ -6,7 +6,6 @@ import in.ekstep.am.dto.credential.RegisterCredentialRequest;
 import in.ekstep.am.dto.credential.RegisterCredentialResponse;
 import in.ekstep.am.step.RegisterCredentialStepChain;
 import in.ekstep.am.step.RegisterCredentialStepChainV2;
-import in.ekstep.am.step.RegisterPortalCredentialStepChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +28,6 @@ public class ConsumerController {
 
   @Autowired
   private RegisterCredentialStepChainV2 registerCredentialStepChainV2;
-
-  @Autowired
-  private RegisterPortalCredentialStepChain registerPortalCredentialStepChain;
 
   @Timed(name = "register-credential-api")
   @RequestMapping(method = RequestMethod.POST, value = "/v1/consumer/{consumer_name}/credential/register",
@@ -77,20 +73,19 @@ public class ConsumerController {
               .withUsername(userName)
               .markSuccess();
 
-      registerCredentialStepChainV2.execute(userName, request, responseBuilder);
+      registerCredentialStepChainV2.execute(userName, request, responseBuilder, "device");
       return responseBuilder.response();
     } catch (Exception e) {
       log.error(format("ERROR WHEN REGISTERING CREDENTIAL. REQUEST: {0}, USERNAME:{1}", request, userName), e);
       return responseBuilder
               .errorResponse("INTERNAL_ERROR", "UNABLE TO REGISTER CREDENTIAL DUE TO INTERNAL ERROR");
     }
-
   }
 
   @Timed(name = "register-credential-portal-api")
   @RequestMapping(method = RequestMethod.POST, value = "/v2/consumer/portal/credential/register",
           consumes = "application/json", produces = "application/json")
-  public ResponseEntity<RegisterCredentialResponse> registerCredentialPortal(@Valid @RequestBody RegisterCredentialRequest request, BindingResult bindingResult) {
+  public ResponseEntity<RegisterCredentialResponse> registerPortalCredential(@Valid @RequestBody RegisterCredentialRequest request, BindingResult bindingResult) {
     String userName = "portal";
     RegisterCredentialResponseBuilder responseBuilder = new RegisterCredentialResponseBuilder();
     try {
@@ -103,14 +98,13 @@ public class ConsumerController {
               .withUsername(userName)
               .markSuccess();
 
-      registerPortalCredentialStepChain.execute(userName, request, responseBuilder);
+      registerCredentialStepChainV2.execute(userName, request, responseBuilder, "portal");
       return responseBuilder.response();
     } catch (Exception e) {
-      log.error(format("ERROR WHEN REGISTERING CREDENTIAL. REQUEST: {0}, USERNAME:{1}", request, userName), e);
+      log.error("ERROR GENERATING CREDENTIAL DUE TO " + e);
       return responseBuilder
-              .errorResponse("INTERNAL_ERROR", "UNABLE TO REGISTER CREDENTIAL DUE TO INTERNAL ERROR");
+              .errorResponse("INTERNAL_ERROR", "UNABLE TO GENERATING CREDENTIAL DUE TO INTERNAL ERROR");
     }
-
   }
 
   @InitBinder

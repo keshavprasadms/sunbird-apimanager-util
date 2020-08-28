@@ -72,4 +72,8 @@ public class CreateCredentialWithKeyStep implements Step {
   private boolean shouldFilter() {
     return !(key == null || key.isEmpty());
   }
+
+  @Override
+  public void execute(String key) throws Exception {
+  }
 }
