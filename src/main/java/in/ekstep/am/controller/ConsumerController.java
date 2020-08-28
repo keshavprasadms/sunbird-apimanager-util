@@ -6,6 +6,7 @@ import in.ekstep.am.dto.credential.RegisterCredentialRequest;
 import in.ekstep.am.dto.credential.RegisterCredentialResponse;
 import in.ekstep.am.step.RegisterCredentialStepChain;
 import in.ekstep.am.step.RegisterCredentialStepChainV2;
+import in.ekstep.am.step.RegisterPortalCredentialStepChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class ConsumerController {
 
   @Autowired
   private RegisterCredentialStepChainV2 registerCredentialStepChainV2;
+
+  @Autowired
+  private RegisterPortalCredentialStepChain registerPortalCredentialStepChain;
 
   @Timed(name = "register-credential-api")
   @RequestMapping(method = RequestMethod.POST, value = "/v1/consumer/{consumer_name}/credential/register",
@@ -64,8 +68,6 @@ public class ConsumerController {
     String userName = "mobile_device";
     RegisterCredentialResponseBuilder responseBuilder = new RegisterCredentialResponseBuilder();
     try {
-      log.debug(format("GOT REQUEST TO REGISTER CREDENTIAL v2. REQUEST: {0}, USERNAME:{1}", request, userName));
-
       if (bindingResult.hasErrors()) {
         return responseBuilder.badRequest(bindingResult);
       }
@@ -76,6 +78,32 @@ public class ConsumerController {
               .markSuccess();
 
       registerCredentialStepChainV2.execute(userName, request, responseBuilder);
+      return responseBuilder.response();
+    } catch (Exception e) {
+      log.error(format("ERROR WHEN REGISTERING CREDENTIAL. REQUEST: {0}, USERNAME:{1}", request, userName), e);
+      return responseBuilder
+              .errorResponse("INTERNAL_ERROR", "UNABLE TO REGISTER CREDENTIAL DUE TO INTERNAL ERROR");
+    }
+
+  }
+
+  @Timed(name = "register-credential-portal-api")
+  @RequestMapping(method = RequestMethod.POST, value = "/v2/consumer/portal/credential/register",
+          consumes = "application/json", produces = "application/json")
+  public ResponseEntity<RegisterCredentialResponse> registerCredentialPortal(@Valid @RequestBody RegisterCredentialRequest request, BindingResult bindingResult) {
+    String userName = "portal";
+    RegisterCredentialResponseBuilder responseBuilder = new RegisterCredentialResponseBuilder();
+    try {
+      if (bindingResult.hasErrors()) {
+        return responseBuilder.badRequest(bindingResult);
+      }
+
+      responseBuilder
+              .withMsgid(request.msgid())
+              .withUsername(userName)
+              .markSuccess();
+
+      registerPortalCredentialStepChain.execute(userName, request, responseBuilder);
       return responseBuilder.response();
     } catch (Exception e) {
       log.error(format("ERROR WHEN REGISTERING CREDENTIAL. REQUEST: {0}, USERNAME:{1}", request, userName), e);
