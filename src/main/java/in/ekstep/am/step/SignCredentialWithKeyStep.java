@@ -16,24 +16,21 @@ public class SignCredentialWithKeyStep implements Step {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private String userName;
     private CredentialDetails responseBuilder;
-    private String key;
+    private String key,randomKey;
     private KeyManager keyManager;
 
-    SignCredentialWithKeyStep(String userName, CredentialDetails responseBuilder, String key, KeyManager keyManager) {
+    SignCredentialWithKeyStep(String userName, CredentialDetails responseBuilder, String key, String randomKey, KeyManager keyManager) {
         this.userName = userName;
         this.responseBuilder = responseBuilder;
         this.key = key;
+        this.randomKey = randomKey;
         this.keyManager = keyManager;
     }
 
     @Override
     public void execute() throws Exception {
-    }
-
-    @Override
-    public void execute(String key) throws Exception {
         responseBuilder.setKey(key);
-        KeyData keyData = keyManager.getRandomKey(key);
+        KeyData keyData = keyManager.getRandomKey(randomKey);
         log.info(key + " signed with " + keyData.getKeyId());
         responseBuilder.setToken(JWTUtil.createRS256Token(key, keyData.getPrivateKey(), createHeaderOptions(keyData.getKeyId())));
     }

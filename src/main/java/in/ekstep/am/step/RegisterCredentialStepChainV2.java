@@ -29,17 +29,17 @@ public class RegisterCredentialStepChainV2 {
   @Autowired
   private KeyManager keyManager;
 
-  public void execute(String userName, RegisterCredentialRequest request, RegisterCredentialResponseBuilder responseBuilder, String key) throws Exception {
-    for (Step step : stepChain(userName, request, responseBuilder, key)) {
+  public void execute(String userName, RegisterCredentialRequest request, RegisterCredentialResponseBuilder responseBuilder, String randomKey) throws Exception {
+    for (Step step : stepChain(userName, request, responseBuilder, randomKey)) {
       if (responseBuilder.successful()) {
-        step.execute(key);
+        step.execute();
       }
     }
   }
 
-  private List<Step> stepChain(String userName, RegisterCredentialRequest request, RegisterCredentialResponseBuilder responseBuilder, String key) {
+  private List<Step> stepChain(String userName, RegisterCredentialRequest request, RegisterCredentialResponseBuilder responseBuilder, String randomKey) {
     SignCredentialWithKeyStep createCredentialWithKeyStep = new SignCredentialWithKeyStep(
-            userName, responseBuilder, request.key(), keyManager);
+            userName, responseBuilder, request.key(), randomKey, keyManager);
     return asList(createCredentialWithKeyStep);
   }
 }
