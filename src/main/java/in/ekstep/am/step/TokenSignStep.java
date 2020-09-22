@@ -24,7 +24,7 @@ public class TokenSignStep implements TokenStep {
     @Autowired
     private KeyData keyData;
 
-    private String currentToken, kid, iss;
+    private String currentToken, kid;
     private Map headerData, bodyData;
     private long tokenValidity, offlineTokenValidity, currentTime, tokenWasIssuedAt;
 
@@ -61,9 +61,11 @@ public class TokenSignStep implements TokenStep {
             return false;
         }
 
+        String iss, mergeIss;
         iss = keyManager.getValueFromKeyMetaData("refresh.token.domain");
-        if (!bodyData.get("iss").equals(iss)) {
-            log.error("Invalid ISS: " + bodyData.get("iss"));
+        mergeIss = keyManager.getValueFromKeyMetaData("refresh.token.merge.domain");
+        if (!bodyData.get("iss").equals(iss) || !bodyData.get("iss").equals(mergeIss)) {
+            log.error(format("Invalid ISS: {0}, invalidToken: {1}", bodyData.get("iss"), currentToken));
             return false;
         }
 
@@ -101,7 +103,7 @@ public class TokenSignStep implements TokenStep {
         header.put("kid", keyData.getKeyId());
         body.put("exp", exp);
         body.put("iat", currentTime);
-        body.put("iss", iss);
+        body.put("iss", bodyData.get("iss"));
         body.put("aud", bodyData.get("aud"));
         body.put("sub", bodyData.get("sub"));
         body.put("typ", "Bearer");
