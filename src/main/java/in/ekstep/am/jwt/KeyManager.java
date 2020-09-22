@@ -63,6 +63,7 @@ public class KeyManager {
         String keyId = environment.getProperty("refresh.token.kid");
         keyMetadata.put("refresh.token.kid", keyId);
         keyMetadata.put("refresh.token.domain", environment.getProperty("refresh.token.domain"));
+        keyMetadata.put("refresh.token.merge.domain", environment.getProperty("refresh.token.merge.domain"));
         keyMetadata.put("access.token.validity", environment.getProperty("access.token.validity"));
         keyMetadata.put("refresh.token.offline.validity", environment.getProperty("refresh.token.offline.validity"));
         keyMetadata.put("refresh.token.log.older.than", environment.getProperty("refresh.token.log.older.than"));
