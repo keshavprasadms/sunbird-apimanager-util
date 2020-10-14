@@ -14,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import static java.text.MessageFormat.format;
@@ -59,7 +60,15 @@ public class ConsumerController {
   @Timed(name = "register-credential-apiv2")
   @RequestMapping(method = RequestMethod.POST, value = "/v2/consumer/{consumer_name}/credential/register",
           consumes = "application/json", produces = "application/json")
-  public ResponseEntity<RegisterCredentialResponse> registerCredentialv2(@Valid @PathVariable(value = "consumer_name") String consumer_name, @Valid @RequestBody RegisterCredentialRequest request, BindingResult bindingResult) {
+  public void registerCredentialv2(@Valid @PathVariable(value = "consumer_name") String consumer_name, @Valid @RequestBody RegisterCredentialRequest request, BindingResult bindingResult, HttpServletResponse response) {
+    response.setHeader("Location", "/api/api-manager/v3/consumer/" + consumer_name + "/credential/register");
+    response.setStatus(447);
+  }
+
+    @Timed(name = "register-credential-apiv3")
+  @RequestMapping(method = RequestMethod.POST, value = "/v3/consumer/{consumer_name}/credential/register",
+          consumes = "application/json", produces = "application/json")
+  public ResponseEntity<RegisterCredentialResponse> registerCredentialv3(@Valid @PathVariable(value = "consumer_name") String consumer_name, @Valid @RequestBody RegisterCredentialRequest request, BindingResult bindingResult) {
 
     RegisterCredentialResponseBuilder responseBuilder = new RegisterCredentialResponseBuilder();
     try {
